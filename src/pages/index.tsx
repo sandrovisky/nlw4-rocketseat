@@ -3,33 +3,63 @@ import { Countdown } from '../components/Countdown'
 import { ExperienceBar } from '../components/ExperienceBar'
 import { Profile } from '../components/Profile'
 import { ChallengeBox } from '../components/ChallengeBox';
+import { GetServerSideProps } from 'next'
 
 import Head  from "next/head";
 
 import styles from '../styles/pages/Home.module.css'
+import { CountdownProvider } from '../contexts/CountdownContext';
+import { ChallengesProvider } from '../contexts/ChallengesContext';
 
-export default function Home() {
+interface HomeProps {
+    level: number
+    currentXp: number
+    challengesCompleted: number
+}
+
+export default function Home(props: HomeProps) {
+    console.log(props)
   return (
-    <div className= {styles.container} >    
-    <Head>
-        <title>Inicio | move.it</title>
-    </Head>
+    <ChallengesProvider 
+        level = {props.level}
+        currentXp = {props.currentXp}
+        challengesCompleted = {props.challengesCompleted}
+    >
+        <div className= {styles.container} >    
+        <Head>
+            <title>Inicio | move.it</title>
+        </Head>
 
-    <ExperienceBar />
+        <ExperienceBar />
 
-    <section>
+        <CountdownProvider>
+            <section>
 
-        <div>
-            <Profile />
-            <CompletedChallenges />
-            <Countdown />
+                <div>
+                    <Profile />
+                    <CompletedChallenges />
+                    <Countdown />
+                </div>
+
+                <div>
+                    <ChallengeBox />
+                </div>
+
+            </section>
+        </CountdownProvider>
         </div>
-
-        <div>
-            <ChallengeBox />
-        </div>
-
-    </section>
-  </div>
+    </ChallengesProvider>
   )
+}
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+    const { level, currentXp, challengesCompleted } = ctx.req.cookies
+
+    return {
+        props: {
+            level: Number(level), 
+            currentXp: Number(currentXp), 
+            challengesCompleted: Number(challengesCompleted)
+        }
+    }
 }
